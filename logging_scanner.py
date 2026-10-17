@@ -41,7 +41,7 @@ def scan_logging(project_id):
 if __name__ == "__main__":
 
     print(f"Scanning Cloud Logging config for project '{PROJECT_ID}'...")
-    results = scan_logging()
+    results = scan_logging(PROJECT_ID)
 
     if not results:
         print("Logging configuration looks good.")

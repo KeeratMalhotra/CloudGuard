@@ -44,7 +44,7 @@ if __name__ == "__main__":
     else:
         print(f"Found {len(results)} finding(s):")
         for f in results:
-            print(f"-> [{f['severity']}] {f['bucket']}: {f['description']}")
+            print(f"-> [{f['severity']}] {f['resource']}: {f['description']}")
             print(f"FIX: {f['fix']}")
             print()
 
