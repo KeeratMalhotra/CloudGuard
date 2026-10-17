@@ -1,27 +1,28 @@
 # CloudGuard — GCP Misconfiguration Scanner
 
-CloudGuard is a mini cloud-security scanner for Google Cloud Platform. It scans a GCP
-project for common security misconfigurations, assigns severity levels, suggests
-fixes, and produces a consolidated security scorecard — viewable either in the
-terminal or through a Streamlit dashboard.
+CloudGuard scans a Google Cloud project for common security misconfigurations,
+scores the project from 0-100, and suggests fixes. It checks public storage
+buckets, over-privileged IAM roles, audit logging gaps, and firewall rules
+open to the internet.
 
-This project was built as a hands-on way to learn practical GCP security concepts
-(IAM, least-privilege, audit logging, firewall exposure) beyond a course curriculum.
+A landing page for this project lives in `landing/` and can be deployed
+separately (e.g. on Vercel).
 
 ## What it checks
 
-| Scanner         | File                  | What it looks for                                                                                   |
-| --------------- | --------------------- | --------------------------------------------------------------------------------------------------- |
-| Storage Buckets | `bucket_scanner.py`   | Buckets exposed to `allUsers` / `allAuthenticatedUsers`                                             |
-| IAM             | `iam_scanner.py`      | Members with broad `Owner`/`Editor` roles, and use of Google's auto-created default service account |
-| Audit Logging   | `logging_scanner.py`  | Missing custom log sinks, short log retention on the default log bucket                             |
-| Firewall        | `firewall_scanner.py` | Ingress rules open to `0.0.0.0/0` on sensitive ports (SSH, RDP, databases, etc.)                    |
+| Scanner | File | Looks for |
+|---|---|---|
+| Storage Buckets | `bucket_scanner.py` | Buckets exposed to `allUsers` / `allAuthenticatedUsers` |
+| IAM | `iam_scanner.py` | Broad `Owner`/`Editor` roles, and Google's default service account |
+| Audit Logging | `logging_scanner.py` | Missing log sinks, short log retention |
+| Firewall | `firewall_scanner.py` | Ingress rules open to `0.0.0.0/0` on sensitive ports |
 
-Each finding includes a **severity** (`CRITICAL` / `HIGH` / `MEDIUM` / `LOW`) and a
-**suggested fix**. `scorecard.py` combines all four scanners and calculates a
-0–100 security score by deducting points per finding.
+Every scanner returns a list of findings in the same shape:
+`scanner`, `severity`, `resource`, `description`, `fix`. `scorecard.py`
+combines all four lists and calculates a score by deducting points per
+finding.
 
-## Architecture
+## How it works
 
 ```
 bucket_scanner.py   ─┐
@@ -30,68 +31,55 @@ logging_scanner.py   │        └────────► terminal output (
 firewall_scanner.py ─┘
 ```
 
-Each scanner is a standalone module exposing a `scan_*()` function that returns a
-list of findings (same shape across all scanners), so they can be run individually
-or combined by `scorecard.py`.
-
-## Prerequisites
-
-- Python 3.9+
-- A GCP project you have access to
-- `gcloud` CLI installed and authenticated ([install guide](https://cloud.google.com/sdk/docs/install))
-- A GCP billing account linked to the project (required for some APIs to activate — scanning itself costs effectively $0, these are read-only calls)
-
 ## Setup
 
-### 1. Clone and install dependencies
+### 1. Get the code
 
 ```bash
 git clone https://github.com/KeeratMalhotra/CloudGuard.git
 cd CloudGuard
+```
+
+### 2. Create a virtual environment and install dependencies
+
+```bash
 python -m venv venv
-# Windows:
+
+# Windows
 venv\Scripts\activate
-# macOS/Linux:
+
+# macOS/Linux
 source venv/bin/activate
 
 pip install -r requirements.txt
 ```
 
-### 2. Enable the required GCP APIs
+### 3. Enable the required GCP APIs
 
 ```bash
-gcloud services enable storage.googleapis.com iam.googleapis.com logging.googleapis.com cloudresourcemanager.googleapis.com compute.googleapis.com --project=YOUR_PROJECT_ID
+gcloud config set project YOUR_PROJECT_ID
+gcloud services enable storage.googleapis.com iam.googleapis.com logging.googleapis.com cloudresourcemanager.googleapis.com compute.googleapis.com
 ```
 
-### 3. Create a dedicated, read-only service account
+### 4. Create a read-only service account
 
-CloudGuard is designed to run with a scoped-down, read-only identity — never your
-personal admin credentials.
-
-```bash
-gcloud iam service-accounts create cloudguard-scanner --display-name="CloudGuard Scanner" --project=YOUR_PROJECT_ID
-```
-
-Create two custom roles with the minimum permissions the scanners need:
+CloudGuard runs as its own service account, not as you. The basic `Viewer`
+role doesn't cover reading a bucket's IAM policy, so two custom roles fill
+that gap.
 
 ```bash
+gcloud iam service-accounts create cloudguard-scanner --display-name="CloudGuard Scanner"
+
 gcloud iam roles create cloudguardStorageReader --project=YOUR_PROJECT_ID \
   --title="CloudGuard Storage Reader" \
-  --description="Read-only access to list buckets and view their IAM policies" \
   --permissions="storage.buckets.list,storage.buckets.get,storage.buckets.getIamPolicy" \
   --stage=GA
 
 gcloud iam roles create cloudguardComputeReader --project=YOUR_PROJECT_ID \
   --title="CloudGuard Compute Reader" \
-  --description="Read-only access to firewall rules and networks" \
   --permissions="compute.firewalls.list,compute.firewalls.get,compute.networks.list" \
   --stage=GA
-```
 
-Grant the service account the roles it needs (custom roles above, plus built-in
-`Viewer` for general read access and `Logs Viewer` for the logging checks):
-
-```bash
 gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
   --member="serviceAccount:cloudguard-scanner@YOUR_PROJECT_ID.iam.gserviceaccount.com" \
   --role="roles/viewer"
@@ -105,8 +93,10 @@ gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
   --role="projects/YOUR_PROJECT_ID/roles/cloudguardComputeReader"
 ```
 
-Generate a key file for this service account (keep it out of source control —
-this repo's `.gitignore` already excludes `*.json` and `credentials/`):
+Note (Windows PowerShell): keep the quotes around `--permissions`. Without
+them, PowerShell splits the comma-separated list and `gcloud` rejects it.
+
+### 5. Generate a key and create `.env`
 
 ```bash
 mkdir credentials
@@ -114,24 +104,23 @@ gcloud iam service-accounts keys create credentials/cloudguard-key.json \
   --iam-account=cloudguard-scanner@YOUR_PROJECT_ID.iam.gserviceaccount.com
 ```
 
-### 4. Set environment variables
+Create a file named `.env` in the project root:
 
-```bash
-# Windows (PowerShell)
-$env:GOOGLE_APPLICATION_CREDENTIALS = "C:\path\to\CloudGuard\credentials\cloudguard-key.json"
-$env:CLOUDGUARD_PROJECT_ID = "YOUR_PROJECT_ID"
-
-# macOS/Linux
-export GOOGLE_APPLICATION_CREDENTIALS="/path/to/CloudGuard/credentials/cloudguard-key.json"
-export CLOUDGUARD_PROJECT_ID="YOUR_PROJECT_ID"
+```
+PROJ_ID=YOUR_PROJECT_ID
+GOOGLE_APPLICATION_CREDENTIALS=/full/path/to/CloudGuard/credentials/cloudguard-key.json
 ```
 
-`CLOUDGUARD_PROJECT_ID` is optional for the dashboard (you can type the project ID
-directly into the UI instead), but required for the terminal scripts below.
+The code never reads this key file directly. Google's client libraries read
+`GOOGLE_APPLICATION_CREDENTIALS` automatically when a client is created
+(Application Default Credentials).
+
+`credentials/`, `*.json`, and `.env` are already in `.gitignore`, so the key
+never gets committed.
 
 ## Usage
 
-**Run an individual scanner:**
+Run one scanner on its own:
 
 ```bash
 python bucket_scanner.py
@@ -140,52 +129,72 @@ python logging_scanner.py
 python firewall_scanner.py
 ```
 
-**Run the full consolidated scorecard (terminal):**
+Run all four and print a combined scorecard:
 
 ```bash
 python scorecard.py
 ```
 
-**Run the Streamlit dashboard:**
+Run the dashboard:
 
 ```bash
 streamlit run dashboard.py
 ```
 
-Opens at `http://localhost:8501`. Enter a GCP project ID and click **Run Security Scan**.
+Opens at `http://localhost:8501`.
 
-## Scoring model
+## Scoring
 
-Score starts at 100 and deducts points per finding:
+Score starts at 100 and loses points per finding:
 
-| Severity | Points deducted |
-| -------- | --------------- |
-| CRITICAL | -20             |
-| HIGH     | -10             |
-| MEDIUM   | -5              |
-| LOW      | -2              |
+| Severity | Points lost |
+|---|---|
+| CRITICAL | 20 |
+| HIGH | 10 |
+| MEDIUM | 5 |
+| LOW | 2 |
 
-| Score  | Grade             |
-| ------ | ----------------- |
-| 90–100 | Excellent         |
-| 70–89  | Good              |
-| 50–69  | Needs Improvement |
-| < 50   | Critical Risk     |
+| Score | Grade |
+|---|---|
+| 90-100 | Excellent |
+| 70-89 | Good |
+| 50-69 | Needs improvement |
+| 0-49 | Critical risk |
+
+## Troubleshooting
+
+**`403 ... does not have storage.buckets.getIamPolicy access`**
+The service account only has `roles/viewer`, which doesn't cover reading a
+bucket's IAM policy. Bind the `cloudguardStorageReader` custom role from
+setup step 4.
+
+**`API has not been used in project <some other project>`**
+Credentials didn't load, so Google fell back to an older login on your
+machine. Check that `GOOGLE_APPLICATION_CREDENTIALS` is set in `.env` and
+points to the real key file.
+
+**`Scanning project 'None'` or `Required parameter: project`**
+`PROJ_ID` is missing from `.env`, or the script isn't being run from the
+folder that contains `.env`.
+
+**`The billing account for the owning project is disabled`**
+Some APIs require a billing account linked to the project, even if nothing
+is spent. Link one under Billing, then Link a billing account.
 
 ## Security notes
 
-- This tool is intentionally **read-only** — none of the scanners can modify,
-  create, or delete any GCP resource. The custom IAM roles above grant only
-  `list`/`get`/`getIamPolicy` permissions.
-- Never commit the service account key JSON file. `.gitignore` is configured to
-  exclude `credentials/` and `*.json` by default.
-- Run the scanner with a dedicated, scoped-down service account rather than your
-  personal/admin credentials (principle of least privilege).
+- The scanner is read-only. It can list and read configuration, not create,
+  modify, or delete anything.
+- The two custom roles grant only six permissions total - the minimum the
+  scanners need.
+- Secrets (`credentials/`, `*.json`, `.env`) are git-ignored from the start.
+- The scanner reads policies and settings, never the contents of your
+  buckets.
 
-## Possible future additions
+## Possible additions
 
 - Cloud SQL / BigQuery public exposure checks
-- Service account key age/rotation checks
-- CIS GCP Foundation Benchmark control mapping
-- Scan history + trend tracking over time
-- Multi-project / organization-wide scanning
+- Service account key age checks
+- CIS GCP Foundation Benchmark mapping
+- Scan history and trend tracking
+- Multi-project scanning
