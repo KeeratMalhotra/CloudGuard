@@ -47,7 +47,7 @@ def evaluate_rule(rule):
                         findings.append({
                             "severity": "HIGH",
                             "description": f"{protocol.upper()} port {port}"
-                            f"({RISKY_PORTS[port]}) open to the entire internet",
+                            f" ({RISKY_PORTS[port]}) open to the entire internet",
                         })
 
     return findings
