@@ -16,7 +16,7 @@ def scan_buckets(project_id):
     for bucket in buckets:
         policy = client.bucket(bucket.name).get_iam_policy(requested_policy_version=3)
         exposed_members = set()
-        
+
         for binding in policy.bindings:
             for member in binding["members"]:
                 if member in PUBLIC_IDENTIFIERS:
@@ -44,7 +44,8 @@ if __name__ == "__main__":
     else:
         print(f"Found {len(results)} finding(s):")
         for f in results:
-            print(f" -> [{f['severity']}] {f['bucket']}: {f['description']}")
+            print(f"-> [{f['severity']}] {f['bucket']}: {f['description']}")
             print(f"FIX: {f['fix']}")
+            print()
 
     print("Scan complete")

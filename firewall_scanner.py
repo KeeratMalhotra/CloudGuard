@@ -2,8 +2,8 @@ import os
 from google.cloud import compute_v1
 from dotenv import load_dotenv
 
-PROJECT_ID = os.environ.get("PROJ_ID")
 load_dotenv();
+PROJECT_ID = os.environ.get("PROJ_ID")
 
 RISKY_PORTS = {
     "22": "SSH", "3389": "RDP", "3306": "MySQL",
@@ -15,7 +15,7 @@ OPEN_TO_WORLD = "0.0.0.0/0"
 def evaluate_rule(rule):
     findings = []
 
-    if rule.direction != "INGRESS" or rule.disabled or not rule.allowed:
+    if rule.direction != "INGRESS" or rule.disabled or not rule.allowed: #nothing to do here returning with empty list
         return findings
     if OPEN_TO_WORLD not in rule.source_ranges:
         return findings
@@ -46,13 +46,12 @@ def evaluate_rule(rule):
                     if port in RISKY_PORTS:
                         findings.append({
                             "severity": "HIGH",
-                            "description": f"{protocol.upper()} port {port} "
-                                            f"({RISKY_PORTS[port]}) open to the entire internet",
+                            "description": f"{protocol.upper()} port {port}" f"({RISKY_PORTS[port]}) open to the entire internet",
                         })
 
     return findings
 
-def scan_firewalls(project_id=PROJECT_ID):
+def scan_firewalls(project_id):
     client = compute_v1.FirewallsClient()
     rules = list(client.list(project=project_id))
     findings = []
@@ -72,7 +71,7 @@ def scan_firewalls(project_id=PROJECT_ID):
 
 if __name__ == "__main__":
     print(f"Scanning firewall rules for project '{PROJECT_ID}'...")
-    results = scan_firewalls()
+    results = scan_firewalls(PROJECT_ID)
     if not results:
         print("○ No risky firewall rules found.")
     else:

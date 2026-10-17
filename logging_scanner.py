@@ -1,17 +1,20 @@
 import os
 from google.cloud.logging_v2.services.config_service_v2 import ConfigServiceV2Client
+from dotenv import load_dotenv
 
-PROJECT_ID = os.environ.get("CLOUDGUARD_PROJECT_ID", "cloudguard-scan-002")
+load_dotenv()
+PROJECT_ID = os.environ.get("PROJ_ID")
 
-def scan_logging(project_id=PROJECT_ID):
+def scan_logging(project_id):
     client = ConfigServiceV2Client()
     parent = f"projects/{project_id}"
-    findings = []
+    findings =[]
 
     sinks = list(client.list_sinks(parent=parent))
-    custom_sinks = [s for s in sinks if not s.name.startswith("_")]
+    custom_sinks = [s for s in sinks if not s.name.startswith("_")]#sinks starting with _ are default ones that already exists in the project
 
-    if not custom_sinks:
+    if len(custom_sinks)==0:
+
         findings.append({
             "scanner": "Audit Logging",
             "severity": "MEDIUM",
@@ -36,13 +39,16 @@ def scan_logging(project_id=PROJECT_ID):
     return findings
 
 if __name__ == "__main__":
+
     print(f"Scanning Cloud Logging config for project '{PROJECT_ID}'...")
     results = scan_logging()
+
     if not results:
-        print("○ Logging configuration looks good.")
+        print("Logging configuration looks good.")
     else:
-        print(f"● Found {len(results)} finding(s):")
+        print(f"Found {len(results)} finding(s):")
         for f in results:
-            print(f"  -> [{f['severity']}] {f['description']}")
-            print(f"     FIX: {f['fix']}")
+            print(f"-> [{f['severity']}] {f['description']}")
+            print(f"FIX: {f['fix']}")
+
     print("Scan complete.")
