@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CloudGuard — GCP Misconfiguration Scanner</title>
+    <meta name="description"
+        content="CloudGuard is an open-source, read-only scanner that finds security misconfigurations in Google Cloud projects and turns them into a single security score." />
+    <meta name="theme-color" content="#0B0B0C" />
+    <meta property="og:title" content="CloudGuard — GCP Misconfiguration Scanner" />
+    <meta property="og:description"
+        content="Find the gaps in your cloud before someone else does. Public buckets, over-privileged IAM, audit logging gaps and exposed firewall ports." />
+    <meta property="og:type" content="website" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400..600&family=Instrument+Serif:ital@0;1&display=swap"
+        rel="stylesheet" />
+
+    <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+    <div class="bg-grid" aria-hidden="true"></div>
+
+    <!-- ============ NAV ============ -->
+    <header class="nav">
+        <div class="container nav__inner">
+            <a href="#top" class="brand" aria-label="CloudGuard home">
+                <svg class="brand__mark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+                    <path d="M16 4.5 26 8.4v7.3c0 6-4.1 10.6-10 12.2-5.9-1.6-10-6.2-10-12.2V8.4l10-3.9Z"
+                        stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+                    <path d="m11.8 16.2 2.9 2.9 5.5-5.7" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+                <span>CloudGuard</span>
+            </a>
+            <nav class="nav__links" aria-label="Primary">
+                <a href="#checks">Checks</a>
+                <a href="#how">How it works</a>
+                <a href="#install">Install</a>
+                <a href="#usage">Usage</a>
+                <a href="#security">Security</a>
+            </nav>
+            <a class="btn btn--ghost btn--sm" href="https://github.com/KeeratMalhotra/CloudGuard" target="_blank"
+                rel="noopener">
+                <svg viewBox="0 0 16 16" aria-hidden="true">
+                    <path fill="currentColor"
+                        d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38v-1.33c-2.23.48-2.7-1.07-2.7-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.05-.49.05-.49.8.06 1.23.83 1.23.83.72 1.22 1.87.87 2.33.66.07-.52.28-.87.5-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8 8 0 0 0 16 8c0-4.42-3.58-8-8-8Z" />
+                </svg>
+                GitHub
+            </a>
+        </div>
+    </header>
+
+    <main id="top">
+        <!-- ============ HERO ============ -->
+        <section class="hero">
+            <div class="container hero__copy">
+                <p class="eyebrow reveal"><span class="dot"></span> Open source · Google Cloud · Read-only</p>
+                <h1 class="hero__title reveal">
+                    Find the gaps in your cloud<br />
+                    <em>before someone else does.</em>
+                </h1>
+                <p class="hero__sub reveal">
+                    CloudGuard scans a GCP project for the misconfigurations behind real breaches:
+                    public buckets, over-privileged identities, missing audit trails and
+                    internet-exposed ports. Then it turns them into one security score.
+                </p>
+                <div class="hero__cta reveal">
+                    <a class="btn btn--primary" href="https://github.com/KeeratMalhotra/CloudGuard/fork" target="_blank"
+                        rel="noopener">
+                        <svg viewBox="0 0 16 16" aria-hidden="true">
+                            <path fill="currentColor"
+                                d="M5 5.37a2.25 2.25 0 1 0-1.5 0v.88A2.25 2.25 0 0 0 5.75 8.5h1.5v2.13a2.25 2.25 0 1 0 1.5 0V8.5h1.5a2.25 2.25 0 0 0 2.25-2.25v-.88a2.25 2.25 0 1 0-1.5 0v.88a.75.75 0 0 1-.75.75h-4.5A.75.75 0 0 1 5 6.25v-.88ZM4.25 3a.75.75 0 1 1 0 1.5.75.75 0 0 1 0-1.5Zm7.5 0a.75.75 0 1 1 0 1.5.75.75 0 0 1 0-1.5ZM8 12a.75.75 0 1 1 0 1.5A.75.75 0 0 1 8 12Z" />
+                        </svg>
+                        Fork on GitHub
+                    </a>
+                    <a class="btn btn--ghost" href="#install">Install guide <svg viewBox="0 0 16 16" aria-hidden="true">
+                            <path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                                stroke-linejoin="round" d="M3 8h10M9 4l4 4-4 4" />
+                        </svg></a>
+                </div>
+                <button class="clone-pill reveal" data-copy="git clone https://github.com/KeeratMalhotra/CloudGuard.git"
+                    aria-label="Copy git clone command">
+                    <span class="clone-pill__prompt">$</span>
+                    <code>git clone https://github.com/KeeratMalhotra/CloudGuard.git</code>
+                    <span class="clone-pill__icon" aria-hidden="true">
+                        <svg viewBox="0 0 16 16">
+                            <path fill="currentColor"
+                                d="M5.75 1h6.5C13.22 1 14 1.78 14 2.75v6.5c0 .97-.78 1.75-1.75 1.75h-6.5C4.78 11 4 10.22 4 9.25v-6.5C4 1.78 4.78 1 5.75 1Zm0 1.5a.25.25 0 0 0-.25.25v6.5c0 .14.11.25.25.25h6.5c.14 0 .25-.11.25-.25v-6.5a.25.25 0 0 0-.25-.25h-6.5ZM2 5.75C2 5.34 2.34 5 2.75 5s.75.34.75.75v7.5c0 .14.11.25.25.25h7.5c.41 0 .75.34.75.75s-.34.75-.75.75h-7.5C2.78 15 2 14.22 2 13.25v-7.5Z" />
+                        </svg>
+                    </span>
+                </button>
+            </div>
+
+            <!-- Floating screens -->
+            <div class="stage-wrap" aria-hidden="true">
+                <div class="stage" id="stage">
+                    <div class="glow"></div>
+
+                    <!-- Terminal -->
+                    <div class="win win--terminal float-a">
+                        <div class="win__bar">
+                            <span class="win__dots"><i></i><i></i><i></i></span>
+                            <span class="win__title">PowerShell — python scorecard.py</span>
+                        </div>
+                        <pre class="term" id="term"></pre>
+                    </div>
+
+                    <!-- Score card -->
+                    <div class="win win--score float-b">
+                        <div class="win__label">Security score</div>
+                        <div class="ring">
+                            <svg viewBox="0 0 120 120">
+                                <circle class="ring__track" cx="60" cy="60" r="50" />
+                                <circle class="ring__bar" id="ringBar" cx="60" cy="60" r="50" />
+                            </svg>
+                            <div class="ring__value"><span id="scoreNum">100</span><small>/100</small></div>
+                        </div>
+                        <div class="grade" id="gradeLabel">Excellent</div>
+                        <ul class="sev-mini">
+                            <li><span class="sev-dot sev--critical"></span>Critical <b id="c-CRITICAL">0</b></li>
+                            <li><span class="sev-dot sev--high"></span>High <b id="c-HIGH">0</b></li>
+                            <li><span class="sev-dot sev--medium"></span>Medium <b id="c-MEDIUM">0</b></li>
+                            <li><span class="sev-dot sev--low"></span>Low <b id="c-LOW">0</b></li>
+                        </ul>
+                    </div>
+
+                    <!-- Finding card -->
+                    <div class="win win--finding float-c">
+                        <div class="finding__head">
+                            <span class="chip chip--critical">CRITICAL</span>
+                            <span class="finding__src">Storage Buckets</span>
+                        </div>
+                        <div class="finding__title">Bucket is publicly readable</div>
+                        <div class="kv"><span>resource</span><code>my-public-bucket</code></div>
+                        <div class="kv"><span>member</span><code>allUsers</code></div>
+                        <div class="kv"><span>role</span><code>roles/storage.objectViewer</code></div>
+                        <div class="finding__fix">Fix: remove allUsers or enforce Public Access Prevention</div>
+                    </div>
+
+                    <!-- Firewall card -->
+                    <div class="win win--rule float-d">
+                        <div class="finding__head">
+                            <span class="chip chip--high">HIGH</span>
+                            <span class="finding__src">Firewall</span>
+                        </div>
+                        <div class="rule">
+                            <code class="rule__name">default-allow-ssh</code>
+                            <div class="rule__flow">
+                                <span class="rule__node">0.0.0.0/0</span>
+                                <span class="rule__line"><i></i></span>
+                                <span class="rule__node rule__node--port">tcp:22</span>
+                            </div>
+                            <div class="rule__meta">INGRESS · ALLOW · SSH</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ STRIP ============ -->
+        <section class="strip">
+            <div class="container strip__inner">
+                <div><b>4</b><span>security scanners</span></div>
+                <div><b>0–100</b><span>weighted security score</span></div>
+                <div><b>Read-only</b><span>least-privilege identity</span></div>
+                <div><b>Local</b><span>runs on your machine</span></div>
+            </div>
+        </section>
+
+        <!-- ============ CHECKS ============ -->
+        <section class="section" id="checks">
+            <div class="container">
+                <header class="section__head reveal">
+                    <p class="kicker">What it checks</p>
+                    <h2 class="section__title">Four checks. <em>The usual suspects.</em></h2>
+                    <p class="section__sub">Each scanner talks to one Google Cloud API, looks for one class of mistake,
+                        and explains how to fix it.</p>
+                </header>
+
+                <div class="cards">
+                    <article class="card reveal">
+                        <div class="card__top">
+                            <div class="card__icon">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <ellipse cx="12" cy="6" rx="8" ry="3" stroke="currentColor" stroke-width="1.5" />
+                                    <path
+                                        d="M4 6v6c0 1.66 3.58 3 8 3s8-1.34 8-3V6M4 12v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"
+                                        stroke="currentColor" stroke-width="1.5" />
+                                </svg>
+                            </div>
+                            <span class="chip chip--critical">CRITICAL</span>
+                        </div>
+                        <h3>Public bucket exposure</h3>
+                        <p>Reads every bucket's IAM policy and flags any binding granted to <code>allUsers</code> or
+                            <code>allAuthenticatedUsers</code>, the only two public identifiers in GCP.</p>
+                        <div class="card__api">
+                            <span>bucket_scanner.py</span><code>storage.Client · get_iam_policy()</code></div>
+                    </article>
+
+                    <article class="card reveal">
+                        <div class="card__top">
+                            <div class="card__icon">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <circle cx="9" cy="8" r="3.5" stroke="currentColor" stroke-width="1.5" />
+                                    <path d="M2.5 19.5c.8-3.3 3.4-5 6.5-5s5.7 1.7 6.5 5" stroke="currentColor"
+                                        stroke-width="1.5" stroke-linecap="round" />
+                                    <path d="m16 9 2 2 4-4" stroke="currentColor" stroke-width="1.5"
+                                        stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </div>
+                            <span class="chip chip--high">HIGH</span><span class="chip chip--medium">MEDIUM</span>
+                        </div>
+                        <h3>Over-privileged identities</h3>
+                        <p>Flags project-wide <code>Owner</code> / <code>Editor</code> bindings, and Google's
+                            auto-created default service accounts that quietly ship with Editor.</p>
+                        <div class="card__api"><span>iam_scanner.py</span><code>ProjectsClient · get_iam_policy()</code>
+                        </div>
+                    </article>
+
+                    <article class="card reveal">
+                        <div class="card__top">
+                            <div class="card__icon">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M6 3.5h9l4 4V20a.5.5 0 0 1-.5.5h-12A.5.5 0 0 1 6 20V3.5Z"
+                                        stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+                                    <path d="M9 11h7M9 14.5h7M9 18h4" stroke="currentColor" stroke-width="1.5"
+                                        stroke-linecap="round" />
+                                </svg>
+                            </div>
+                            <span class="chip chip--medium">MEDIUM</span><span class="chip chip--low">LOW</span>
+                        </div>
+                        <h3>Audit trail gaps</h3>
+                        <p>Checks whether logs are exported anywhere through a custom sink, and whether the default log
+                            bucket keeps them longer than the 30-day minimum.</p>
+                        <div class="card__api">
+                            <span>logging_scanner.py</span><code>ConfigServiceV2Client · list_sinks()</code></div>
+                    </article>
+
+                    <article class="card reveal">
+                        <div class="card__top">
+                            <div class="card__icon">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <rect x="3" y="4.5" width="18" height="15" rx="1.5" stroke="currentColor"
+                                        stroke-width="1.5" />
+                                    <path d="M3 9.5h18M3 14.5h18M9 4.5v5M15 9.5v5M9 14.5v5" stroke="currentColor"
+                                        stroke-width="1.5" />
+                                </svg>
+                            </div>
+                            <span class="chip chip--critical">CRITICAL</span><span class="chip chip--high">HIGH</span>
+                        </div>
+                        <h3>Internet-exposed ports</h3>
+                        <p>Finds ingress rules open to <code>0.0.0.0/0</code> on SSH, RDP and database ports. It's
+                            protocol-aware, so ICMP and disabled rules don't raise false alarms.</p>
+                        <div class="card__api"><span>firewall_scanner.py</span><code>FirewallsClient · list()</code>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ HOW IT WORKS ============ -->
+        <section class="section section--alt" id="how">
+            <div class="container">
+                <header class="section__head reveal">
+                    <p class="kicker">How it works</p>
+                    <h2 class="section__title">Small modules. <em>One shared contract.</em></h2>
+                    <p class="section__sub">Every scanner returns findings in the same shape, so the scorecard can
+                        merge, rank and score them without caring where they came from.</p>
+                </header>
+
+                <div class="flow reveal">
+                    <div class="flow__col">
+                        <div class="node"><span class="node__k">scan</span>bucket_scanner.py</div>
+                        <div class="node"><span class="node__k">scan</span>iam_scanner.py</div>
+                        <div class="node"><span class="node__k">scan</span>logging_scanner.py</div>
+                        <div class="node"><span class="node__k">scan</span>firewall_scanner.py</div>
+                    </div>
+                    <svg class="flow__wire flow__wire--in" viewBox="0 0 100 100" preserveAspectRatio="none"
+                        aria-hidden="true">
+                        <path d="M0 12.5 C 50 12.5, 50 50, 100 50" />
+                        <path d="M0 37.5 C 50 37.5, 50 50, 100 50" />
+                        <path d="M0 62.5 C 50 62.5, 50 50, 100 50" />
+                        <path d="M0 87.5 C 50 87.5, 50 50, 100 50" />
+                    </svg>
+                    <div class="flow__col flow__col--center">
+                        <div class="node node--hub">
+                            <span class="node__k">merge · score · rank</span>
+                            scorecard.py
+                            <small>100 − Σ severity weights</small>
+                        </div>
+                    </div>
+                    <svg class="flow__wire flow__wire--out" viewBox="0 0 100 100" preserveAspectRatio="none"
+                        aria-hidden="true">
+                        <path d="M0 50 C 50 50, 50 28, 100 28" />
+                        <path d="M0 50 C 50 50, 50 72, 100 72" />
+                    </svg>
+                    <div class="flow__col flow__col--out">
+                        <div class="node"><span class="node__k">output</span>Terminal report</div>
+                        <div class="node"><span class="node__k">output</span>Streamlit dashboard</div>
+                    </div>
+                </div>
+
+                <div class="split">
+                    <div class="split__text reveal">
+                        <h3>The finding contract</h3>
+                        <p>Each <code>scan_*()</code> function returns a list of plain dictionaries. Keeping the keys
+                            identical across scanners is what lets <code>scorecard.py</code> combine all of them with a
+                            simple <code>+=</code>.</p>
+                        <ul class="ticks">
+                            <li>One GCP client per scanner, authenticated through Application Default Credentials</li>
+                            <li>Detection logic returns data instead of printing it</li>
+                            <li>Severity drives both the ordering and the score</li>
+                        </ul>
+                    </div>
+                    <div class="code reveal">
+                        <div class="code__bar"><span>finding.py</span><button class="copy"
+                                data-copy-target="schema">Copy</button></div>
+                        <pre id="schema"><code><span class="t-p">{</span>
+  <span class="t-k">"scanner"</span>:     <span class="t-s">"Firewall"</span>,
+  <span class="t-k">"severity"</span>:    <span class="t-s">"HIGH"</span>,
+  <span class="t-k">"resource"</span>:    <span class="t-s">"default-allow-ssh"</span>,
+  <span class="t-k">"description"</span>: <span class="t-s">"TCP port 22 (SSH) open to the entire internet"</span>,
+  <span class="t-k">"fix"</span>:         <span class="t-s">"Restrict the source range to trusted IPs"</span>
+<span class="t-p">}</span></code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ SCORING ============ -->
+        <section class="section" id="scoring">
+            <div class="container">
+                <header class="section__head reveal">
+                    <p class="kicker">Scoring model</p>
+                    <h2 class="section__title">Start at 100. <em>Lose points for every gap.</em></h2>
+                </header>
+
+                <div class="score-grid">
+                    <div class="panel reveal">
+                        <h3 class="panel__title">Severity weights</h3>
+                        <ul class="weights">
+                            <li><span class="chip chip--critical">CRITICAL</span><span class="bar"><i style="--w:100%"
+                                        class="bg-critical"></i></span><b>−20</b></li>
+                            <li><span class="chip chip--high">HIGH</span><span class="bar"><i style="--w:50%"
+                                        class="bg-high"></i></span><b>−10</b></li>
+                            <li><span class="chip chip--medium">MEDIUM</span><span class="bar"><i style="--w:25%"
+                                        class="bg-medium"></i></span><b>−5</b></li>
+                            <li><span class="chip chip--low">LOW</span><span class="bar"><i style="--w:10%"
+                                        class="bg-low"></i></span><b>−2</b></li>
+                        </ul>
+                    </div>
+
+                    <div class="panel reveal">
+                        <h3 class="panel__title">Grades</h3>
+                        <ul class="grades">
+                            <li><span>90 – 100</span><b>Excellent</b></li>
+                            <li><span>70 – 89</span><b>Good</b></li>
+                            <li><span>50 – 69</span><b>Needs improvement</b></li>
+                            <li><span>0 – 49</span><b class="t-accent">Critical risk</b></li>
+                        </ul>
+                    </div>
+
+                    <div class="panel panel--wide reveal">
+                        <h3 class="panel__title">Worked example: a freshly created GCP project</h3>
+                        <p class="equation">
+                            <span>100</span> − (<span class="c-critical">1×20</span> + <span class="c-high">4×10</span>
+                            + <span class="c-medium">3×5</span> + <span class="c-low">1×2</span>) = <b
+                                class="t-accent">23</b>
+                        </p>
+                        <p class="muted">One public test bucket, the default network's open SSH/RDP rules, a default
+                            service account with Editor, two Owners, and default log settings. These are mostly things
+                            GCP gives you out of the box.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ INSTALL ============ -->
+        <section class="section section--alt" id="install">
+            <div class="container">
+                <header class="section__head reveal">
+                    <p class="kicker">Install &amp; setup</p>
+                    <h2 class="section__title">Running in about <em>ten minutes.</em></h2>
+                    <p class="section__sub">Type your project ID once and every command below updates. Pick your shell,
+                        then copy and paste your way down.</p>
+                </header>
+
+                <div class="controls reveal">
+                    <label class="field">
+                        <span>Your GCP project ID</span>
+                        <input id="pidInput" type="text" placeholder="my-gcp-project-123" spellcheck="false"
+                            autocomplete="off" />
+                    </label>
+                    <div class="seg" role="tablist" aria-label="Shell">
+                        <button class="seg__btn is-active" data-os="win" role="tab" aria-selected="true">Windows ·
+                            PowerShell</button>
+                        <button class="seg__btn" data-os="unix" role="tab" aria-selected="false">macOS · Linux</button>
+                    </div>
+                </div>
+
+                <div class="prereq reveal">
+                    <b>Before you start:</b> Python 3.9+, the <a href="https://cloud.google.com/sdk/docs/install"
+                        target="_blank" rel="noopener">gcloud CLI</a>, and a GCP project with billing linked where
+                    you're an Owner (needed once, to create the scanner's identity). The scans themselves are read-only
+                    metadata calls.
+                </div>
+
+                <ol class="steps">
+                    <!-- STEP 1 -->
+                    <li class="step reveal">
+                        <div class="step__num">01</div>
+                        <div class="step__body">
+                            <h3>Get the code</h3>
+                            <p>Fork it if you want your own copy to build on, clone it if you just want to run it, or
+                                grab the ZIP.</p>
+
+                            <div class="tabs" data-tabs>
+                                <div class="tabs__list" role="tablist">
+                                    <button class="tabs__btn is-active" data-tab="fork" role="tab"
+                                        aria-selected="true">Fork</button>
+                                    <button class="tabs__btn" data-tab="clone" role="tab"
+                                        aria-selected="false">Clone</button>
+                                    <button class="tabs__btn" data-tab="zip" role="tab"
+                                        aria-selected="false">ZIP</button>
+                                </div>
+
+                                <div class="tabs__panel is-active" data-panel="fork">
+                                    <p class="hint">1. Hit <a href="https://github.com/KeeratMalhotra/CloudGuard/fork"
+                                            target="_blank" rel="noopener">Fork on GitHub</a>. 2. Clone your fork. 3.
+                                        Optionally track the original repo for updates.</p>
+                                    <div class="code">
+                                        <div class="code__bar"><span>terminal</span><button class="copy">Copy</button>
+                                        </div>
+                                        <pre><code>git clone https://github.com/YOUR_GITHUB_USERNAME/CloudGuard.git
+cd CloudGuard
+git remote add upstream https://github.com/KeeratMalhotra/CloudGuard.git</code></pre>
+                                    </div>
+                                </div>
+
+                                <div class="tabs__panel" data-panel="clone">
+                                    <div class="code">
+                                        <div class="code__bar"><span>terminal</span><button class="copy">Copy</button>
+                                        </div>
+                                        <pre><code>git clone https://github.com/KeeratMalhotra/CloudGuard.git
+cd CloudGuard</code></pre>
+                                    </div>
+                                </div>
+
+                                <div class="tabs__panel" data-panel="zip">
+                                    <p class="hint"><a
+                                            href="https://github.com/KeeratMalhotra/CloudGuard/archive/refs/heads/master.zip">Download
+                                            the ZIP</a>, extract it, then open a terminal inside the folder:</p>
+                                    <div class="code">
+                                        <div class="code__bar"><span>terminal</span><button class="copy">Copy</button>
+                                        </div>
+                                        <pre><code>cd CloudGuard-master</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+
+                    <!-- STEP 2 -->
+                    <li class="step reveal">
+                        <div class="step__num">02</div>
+                        <div class="step__body">
+                            <h3>Create a virtual environment</h3>
+                            <p>A <code>venv</code> keeps CloudGuard's packages isolated from the rest of your machine.
+                            </p>
+                            <div class="code" data-os-block="win">
+                                <div class="code__bar"><span>PowerShell</span><button class="copy">Copy</button></div>
+                                <pre><code>python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt</code></pre>
+                            </div>
+                            <div class="code" data-os-block="unix" hidden>
+                                <div class="code__bar"><span>bash / zsh</span><button class="copy">Copy</button></div>
+                                <pre><code>python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt</code></pre>
+                            </div>
+                            <p class="note" data-os-block="win">If PowerShell refuses to run the activate script, allow
+                                local scripts once with
+                                <code>Set-ExecutionPolicy -Scope CurrentUser RemoteSigned</code>.</p>
+                        </div>
+                    </li>
+
+                    <!-- STEP 3 -->
+                    <li class="step reveal">
+                        <div class="step__num">03</div>
+                        <div class="step__body">
+                            <h3>Point gcloud at your project &amp; enable the APIs</h3>
+                            <p>Each scanner calls a different Google API, and every API is switched off on a new project
+                                by default.</p>
+                            <div class="code">
+                                <div class="code__bar"><span>terminal</span><button class="copy">Copy</button></div>
+                                <pre><code>gcloud auth login
+gcloud config set project <span class="pid">YOUR_PROJECT_ID</span>
+gcloud services enable storage.googleapis.com iam.googleapis.com logging.googleapis.com cloudresourcemanager.googleapis.com compute.googleapis.com</code></pre>
+                            </div>
+                        </div>
+                    </li>
+
+                    <!-- STEP 4 -->
+                    <li class="step reveal">
+                        <div class="step__num">04</div>
+                        <div class="step__body">
+                            <h3>Create a read-only scanner identity</h3>
+                            <p>CloudGuard runs as its own service account, not as you. Basic <code>Viewer</code> doesn't
+                                include permission to read bucket IAM policies, so two small custom roles fill exactly
+                                that gap.</p>
+
+                            <div class="code" data-os-block="win">
+                                <div class="code__bar"><span>PowerShell</span><button class="copy">Copy</button></div>
+                                <pre><code>gcloud iam service-accounts create cloudguard-scanner --display-name="CloudGuard Scanner"
+
+gcloud iam roles create cloudguardStorageReader --project=<span class="pid">YOUR_PROJECT_ID</span> --title="CloudGuard Storage Reader" --permissions="storage.buckets.list,storage.buckets.get,storage.buckets.getIamPolicy" --stage=GA
+
+gcloud iam roles create cloudguardComputeReader --project=<span class="pid">YOUR_PROJECT_ID</span> --title="CloudGuard Compute Reader" --permissions="compute.firewalls.list,compute.firewalls.get,compute.networks.list" --stage=GA
+
+gcloud projects add-iam-policy-binding <span class="pid">YOUR_PROJECT_ID</span> --member="serviceAccount:cloudguard-scanner@<span class="pid">YOUR_PROJECT_ID</span>.iam.gserviceaccount.com" --role="roles/viewer"
+
+gcloud projects add-iam-policy-binding <span class="pid">YOUR_PROJECT_ID</span> --member="serviceAccount:cloudguard-scanner@<span class="pid">YOUR_PROJECT_ID</span>.iam.gserviceaccount.com" --role="projects/<span class="pid">YOUR_PROJECT_ID</span>/roles/cloudguardStorageReader"
+
+gcloud projects add-iam-policy-binding <span class="pid">YOUR_PROJECT_ID</span> --member="serviceAccount:cloudguard-scanner@<span class="pid">YOUR_PROJECT_ID</span>.iam.gserviceaccount.com" --role="projects/<span class="pid">YOUR_PROJECT_ID</span>/roles/cloudguardComputeReader"</code></pre>
+                            </div>
+
+                            <div class="code" data-os-block="unix" hidden>
+                                <div class="code__bar"><span>bash / zsh</span><button class="copy">Copy</button></div>
+                                <pre><code>PROJECT=<span class="pid">YOUR_PROJECT_ID</span>
+SA="cloudguard-scanner@${PROJECT}.iam.gserviceaccount.com"
+
+gcloud iam service-accounts create cloudguard-scanner --display-name="CloudGuard Scanner"
+
+gcloud iam roles create cloudguardStorageReader --project="$PROJECT" \
+  --title="CloudGuard Storage Reader" \
+  --permissions="storage.buckets.list,storage.buckets.get,storage.buckets.getIamPolicy" \
+  --stage=GA
+
+gcloud iam roles create cloudguardComputeReader --project="$PROJECT" \
+  --title="CloudGuard Compute Reader" \
+  --permissions="compute.firewalls.list,compute.firewalls.get,compute.networks.list" \
+  --stage=GA
+
+for ROLE in roles/viewer \
+            "projects/$PROJECT/roles/cloudguardStorageReader" \
+            "projects/$PROJECT/roles/cloudguardComputeReader"; do
+  gcloud projects add-iam-policy-binding "$PROJECT" \
+    --member="serviceAccount:$SA" --role="$ROLE"
+done</code></pre>
+                            </div>
+                            <p class="note" data-os-block="win">Keep the quotes around <code>--permissions</code>.
+                                Without them PowerShell splits the comma list and gcloud rejects it as an invalid
+                                permission.</p>
+                        </div>
+                    </li>
+
+                    <!-- STEP 5 -->
+                    <li class="step reveal">
+                        <div class="step__num">05</div>
+                        <div class="step__body">
+                            <h3>Generate a key &amp; create your <code>.env</code></h3>
+                            <p>The key file is the scanner's password. It goes in <code>credentials/</code>, which
+                                <code>.gitignore</code> already keeps out of git.</p>
+                            <div class="code">
+                                <div class="code__bar"><span>terminal</span><button class="copy">Copy</button></div>
+                                <pre><code>mkdir credentials
+gcloud iam service-accounts keys create credentials/cloudguard-key.json --iam-account=cloudguard-scanner@<span class="pid">YOUR_PROJECT_ID</span>.iam.gserviceaccount.com</code></pre>
+                            </div>
+
+                            <p>Then create a file called <code>.env</code> in the project root:</p>
+                            <div class="code" data-os-block="win">
+                                <div class="code__bar"><span>.env</span><button class="copy">Copy</button></div>
+                                <pre><code>PROJ_ID=<span class="pid">YOUR_PROJECT_ID</span>
+GOOGLE_APPLICATION_CREDENTIALS=C:\path\to\CloudGuard\credentials\cloudguard-key.json</code></pre>
+                            </div>
+                            <div class="code" data-os-block="unix" hidden>
+                                <div class="code__bar"><span>.env</span><button class="copy">Copy</button></div>
+                                <pre><code>PROJ_ID=<span class="pid">YOUR_PROJECT_ID</span>
+GOOGLE_APPLICATION_CREDENTIALS=/path/to/CloudGuard/credentials/cloudguard-key.json</code></pre>
+                            </div>
+                            <p class="note">You never pass the key to the code yourself. Google's client libraries read
+                                <code>GOOGLE_APPLICATION_CREDENTIALS</code> automatically when a client is created
+                                (Application Default Credentials).</p>
+                        </div>
+                    </li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- ============ USAGE ============ -->
+        <section class="section" id="usage">
+            <div class="container">
+                <header class="section__head reveal">
+                    <p class="kicker">Usage</p>
+                    <h2 class="section__title">Three ways <em>to run a scan.</em></h2>
+                </header>
+
+                <div class="usage">
+                    <div class="usage__card reveal">
+                        <span class="usage__tag">Single check</span>
+                        <h3>Run one scanner</h3>
+                        <p>Each module also works on its own, which helps when you're debugging one area.</p>
+                        <div class="code">
+                            <div class="code__bar"><span>terminal</span><button class="copy">Copy</button></div>
+                            <pre><code>python bucket_scanner.py
+python iam_scanner.py
+python logging_scanner.py
+python firewall_scanner.py</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="usage__card reveal">
+                        <span class="usage__tag">Full report</span>
+                        <h3>Terminal scorecard</h3>
+                        <p>Runs all four scanners and prints findings grouped by severity, with the final score.</p>
+                        <div class="code">
+                            <div class="code__bar"><span>terminal</span><button class="copy">Copy</button></div>
+                            <pre><code>python scorecard.py</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="usage__card reveal">
+                        <span class="usage__tag">Dashboard</span>
+                        <h3>Streamlit UI</h3>
+                        <p>Score ring, severity breakdown, filterable findings and CSV/JSON export.</p>
+                        <div class="code">
+                            <div class="code__bar"><span>terminal</span><button class="copy">Copy</button></div>
+                            <pre><code>streamlit run dashboard.py</code></pre>
+                        </div>
+                        <p class="note">Opens at <code>http://localhost:8501</code></p>
+                    </div>
+                </div>
+
+                <div class="faq reveal">
+                    <h3 class="faq__title">When something breaks</h3>
+                    <details>
+                        <summary><code>403 … does not have storage.buckets.getIamPolicy access</code></summary>
+                        <p>The service account only has <code>roles/viewer</code>. Basic Viewer can't read IAM policies
+                            on buckets, so bind the <code>cloudguardStorageReader</code> custom role from step 04.</p>
+                    </details>
+                    <details>
+                        <summary><code>API has not been used in project &lt;some-other-project&gt;</code></summary>
+                        <p>Your credentials didn't load, so Google fell back to an older login on your machine. Check
+                            that <code>GOOGLE_APPLICATION_CREDENTIALS</code> is in <code>.env</code> and points to the
+                            real key file.</p>
+                    </details>
+                    <details>
+                        <summary><code>Scanning project 'None'</code> / <code>Required parameter: project</code>
+                        </summary>
+                        <p><code>PROJ_ID</code> is missing from <code>.env</code>, or you're running the script from a
+                            different folder than the one containing <code>.env</code>.</p>
+                    </details>
+                    <details>
+                        <summary><code>The billing account for the owning project is disabled</code></summary>
+                        <p>Some APIs won't activate without a billing account linked to the project, even if you spend
+                            nothing. Link one under <b>Billing</b>, then <b>Link a billing account</b>.</p>
+                    </details>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ SECURITY ============ -->
+        <section class="section section--alt" id="security">
+            <div class="container">
+                <header class="section__head reveal">
+                    <p class="kicker">Security by design</p>
+                    <h2 class="section__title">A security tool <em>should practise what it preaches.</em></h2>
+                </header>
+
+                <div class="pillars">
+                    <div class="pillar reveal">
+                        <span class="pillar__n">01</span>
+                        <h3>Read-only identity</h3>
+                        <p>The scanner's service account can list and read configuration. It has no permission to
+                            create, change or delete anything.</p>
+                    </div>
+                    <div class="pillar reveal">
+                        <span class="pillar__n">02</span>
+                        <h3>Least privilege, by hand</h3>
+                        <p>Instead of broad admin roles, two custom roles grant exactly six extra permissions, the
+                            minimum the scanners need.</p>
+                    </div>
+                    <div class="pillar reveal">
+                        <span class="pillar__n">03</span>
+                        <h3>Secrets stay local</h3>
+                        <p><code>credentials/</code>, <code>*.json</code> and <code>.env</code> are git-ignored from the
+                            very first commit, so keys never reach GitHub.</p>
+                    </div>
+                    <div class="pillar reveal">
+                        <span class="pillar__n">04</span>
+                        <h3>Metadata, not data</h3>
+                        <p>CloudGuard reads policies, rules and settings. It never opens objects inside your buckets,
+                            and it runs entirely on your machine.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ CTA ============ -->
+        <section class="cta">
+            <div class="container cta__inner reveal">
+                <h2>Scan your project. <em>Fix what it finds.</em></h2>
+                <div class="hero__cta">
+                    <a class="btn btn--primary" href="https://github.com/KeeratMalhotra/CloudGuard/fork" target="_blank"
+                        rel="noopener">Fork on GitHub</a>
+                    <a class="btn btn--ghost" href="https://github.com/KeeratMalhotra/CloudGuard" target="_blank"
+                        rel="noopener">Read the source</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container footer__inner">
+            <div class="brand brand--small">
+                <svg class="brand__mark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+                    <path d="M16 4.5 26 8.4v7.3c0 6-4.1 10.6-10 12.2-5.9-1.6-10-6.2-10-12.2V8.4l10-3.9Z"
+                        stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+                    <path d="m11.8 16.2 2.9 2.9 5.5-5.7" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+                <span>CloudGuard</span>
+            </div>
+            <p>Built by <a href="https://github.com/KeeratMalhotra" target="_blank" rel="noopener">Keerat Malhotra</a> ·
+                Python · Google Cloud APIs · Streamlit</p>
+            <a href="https://github.com/KeeratMalhotra/CloudGuard" target="_blank"
+                rel="noopener">github.com/KeeratMalhotra/CloudGuard</a>
+        </div>
+    </footer>
+
+    <div class="toast" id="toast" role="status" aria-live="polite">Copied to clipboard</div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
