@@ -1,6 +1,7 @@
+import os
 from google.cloud import resourcemanager_v3
 
-PROJECT_ID = "cloudguard-scan-002"
+PROJECT_ID = os.environ.get("CLOUDGUARD_PROJECT_ID", "cloudguard-scan-002")
 RISKY_ROLES = ["roles/owner", "roles/editor"]
 
 def is_default_service_account(member):

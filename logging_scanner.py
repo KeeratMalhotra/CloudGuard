@@ -1,6 +1,7 @@
+import os
 from google.cloud.logging_v2.services.config_service_v2 import ConfigServiceV2Client
 
-PROJECT_ID = "cloudguard-scan-002"
+PROJECT_ID = os.environ.get("CLOUDGUARD_PROJECT_ID", "cloudguard-scan-002")
 
 def scan_logging(project_id=PROJECT_ID):
     client = ConfigServiceV2Client()

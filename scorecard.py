@@ -1,9 +1,10 @@
+import os
 from bucket_scanner import scan_buckets
 from iam_scanner import scan_iam
 from logging_scanner import scan_logging
 from firewall_scanner import scan_firewalls
 
-PROJECT_ID = "cloudguard-scan-002"
+PROJECT_ID = os.environ.get("CLOUDGUARD_PROJECT_ID", "cloudguard-scan-002")
 
 SEVERITY_WEIGHTS = {
     "CRITICAL": 20,

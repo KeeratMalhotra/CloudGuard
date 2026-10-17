@@ -1,0 +1,6 @@
+google-cloud-storage
+google-cloud-iam
+google-cloud-logging
+google-cloud-resource-manager
+google-cloud-compute
+streamlit

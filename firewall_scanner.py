@@ -1,6 +1,7 @@
+import os
 from google.cloud import compute_v1
 
-PROJECT_ID = "cloudguard-scan-002"
+PROJECT_ID = os.environ.get("CLOUDGUARD_PROJECT_ID", "cloudguard-scan-002")
 
 RISKY_PORTS = {
     "22": "SSH", "3389": "RDP", "3306": "MySQL",

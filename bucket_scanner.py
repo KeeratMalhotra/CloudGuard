@@ -1,6 +1,7 @@
+import os
 from google.cloud import storage
 
-PROJECT_ID = "cloudguard-scan-002"
+PROJECT_ID = os.environ.get("CLOUDGUARD_PROJECT_ID", "cloudguard-scan-002")
 PUBLIC_IDENTIFIERS = ["allUsers", "allAuthenticatedUsers"]
 
 def scan_buckets(project_id=PROJECT_ID):
