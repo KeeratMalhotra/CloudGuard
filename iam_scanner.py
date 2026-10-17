@@ -1,16 +1,15 @@
 import os
 from google.cloud import resourcemanager_v3
+from dotenv import load_dotenv
 
-PROJECT_ID = os.environ.get("CLOUDGUARD_PROJECT_ID", "cloudguard-scan-002")
+load_dotenv()
+PROJECT_ID = os.environ.get("PROJ_ID")
 RISKY_ROLES = ["roles/owner", "roles/editor"]
 
-def is_default_service_account(member):
-    return (
-        "-compute@developer.gserviceaccount.com" in member
-        or "@appspot.gserviceaccount.com" in member
-    )
+def is_default_service_account(member):#function to check for service accounts
+    return "-compute@developer.gserviceaccount.com" in member or "@appspot.gserviceaccount.com" in member
 
-def scan_iam(project_id=PROJECT_ID):
+def scan_iam(project_id):
     client = resourcemanager_v3.ProjectsClient()
     resource = f"projects/{project_id}"
     policy = client.get_iam_policy(resource=resource)
@@ -35,19 +34,21 @@ def scan_iam(project_id=PROJECT_ID):
                     "resource": member,
                     "description": f"Member has broad role '{role}'",
                     "fix": "Review whether this member truly needs Owner/Editor. "
-                           "Prefer narrower, specific roles (principle of least privilege).",
+                           "Prefer narrower, specific roles (use principle of least privilege).",
                 })
 
     return findings
 
 if __name__ == "__main__":
     print(f"Scanning IAM policy for project '{PROJECT_ID}'...")
-    results = scan_iam()
-    if not results:
-        print("○ No risky IAM assignments found.")
+    results = scan_iam(PROJECT_ID)
+
+    if len(results)==0:
+        print("No risky IAM assignments found.")
     else:
-        print(f"● Found {len(results)} finding(s):")
+        print(f"Found {len(results)} finding(s):")
         for f in results:
-            print(f"  -> [{f['severity']}] {f['resource']}: {f['description']}")
-            print(f"     FIX: {f['fix']}")
-    print("Scan complete.")
+            print(f" -> [{f['severity']}] {f['resource']}: {f['description']}")
+            print(f"FIX: {f['fix']}")
+
+    print("Scan complete")

@@ -1,7 +1,9 @@
 import os
 from google.cloud import compute_v1
+from dotenv import load_dotenv
 
-PROJECT_ID = os.environ.get("CLOUDGUARD_PROJECT_ID", "cloudguard-scan-002")
+PROJECT_ID = os.environ.get("PROJ_ID")
+load_dotenv();
 
 RISKY_PORTS = {
     "22": "SSH", "3389": "RDP", "3306": "MySQL",
