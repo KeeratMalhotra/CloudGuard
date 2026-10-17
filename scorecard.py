@@ -3,8 +3,10 @@ from bucket_scanner import scan_buckets
 from iam_scanner import scan_iam
 from logging_scanner import scan_logging
 from firewall_scanner import scan_firewalls
+from dotenv import load_dotenv
 
-PROJECT_ID = os.environ.get("CLOUDGUARD_PROJECT_ID", "cloudguard-scan-002")
+load_dotenv()
+PROJECT_ID = os.environ.get("PROJ_ID")
 
 SEVERITY_WEIGHTS = {
     "CRITICAL": 20,

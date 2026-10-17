@@ -26,7 +26,7 @@ def scan_buckets(project_id):
             findings.append({
                 "scanner": "Storage Buckets",
                 "severity": "CRITICAL",
-                "bucket": bucket.name,
+                "resource": bucket.name,
                 "description": f"Bucket is publicly accessible to {', '.join(exposed_members)}",
                 "fix": "Remove allUsers/allAuthenticatedUsers from the bucket's IAM policy, "
                        "or enable Public Access Prevention.",
