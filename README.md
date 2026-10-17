@@ -1,4 +1,4 @@
-# 🛡️ CloudGuard — GCP Misconfiguration Scanner
+# CloudGuard — GCP Misconfiguration Scanner
 
 CloudGuard is a mini cloud-security scanner for Google Cloud Platform. It scans a GCP
 project for common security misconfigurations, assigns severity levels, suggests
@@ -10,12 +10,12 @@ This project was built as a hands-on way to learn practical GCP security concept
 
 ## What it checks
 
-| Scanner | File | What it looks for |
-|---|---|---|
-| Storage Buckets | `bucket_scanner.py` | Buckets exposed to `allUsers` / `allAuthenticatedUsers` |
-| IAM | `iam_scanner.py` | Members with broad `Owner`/`Editor` roles, and use of Google's auto-created default service account |
-| Audit Logging | `logging_scanner.py` | Missing custom log sinks, short log retention on the default log bucket |
-| Firewall | `firewall_scanner.py` | Ingress rules open to `0.0.0.0/0` on sensitive ports (SSH, RDP, databases, etc.) |
+| Scanner         | File                  | What it looks for                                                                                   |
+| --------------- | --------------------- | --------------------------------------------------------------------------------------------------- |
+| Storage Buckets | `bucket_scanner.py`   | Buckets exposed to `allUsers` / `allAuthenticatedUsers`                                             |
+| IAM             | `iam_scanner.py`      | Members with broad `Owner`/`Editor` roles, and use of Google's auto-created default service account |
+| Audit Logging   | `logging_scanner.py`  | Missing custom log sinks, short log retention on the default log bucket                             |
+| Firewall        | `firewall_scanner.py` | Ingress rules open to `0.0.0.0/0` on sensitive ports (SSH, RDP, databases, etc.)                    |
 
 Each finding includes a **severity** (`CRITICAL` / `HIGH` / `MEDIUM` / `LOW`) and a
 **suggested fix**. `scorecard.py` combines all four scanners and calculates a
@@ -132,6 +132,7 @@ directly into the UI instead), but required for the terminal scripts below.
 ## Usage
 
 **Run an individual scanner:**
+
 ```bash
 python bucket_scanner.py
 python iam_scanner.py
@@ -140,14 +141,17 @@ python firewall_scanner.py
 ```
 
 **Run the full consolidated scorecard (terminal):**
+
 ```bash
 python scorecard.py
 ```
 
 **Run the Streamlit dashboard:**
+
 ```bash
 streamlit run dashboard.py
 ```
+
 Opens at `http://localhost:8501`. Enter a GCP project ID and click **Run Security Scan**.
 
 ## Scoring model
@@ -155,18 +159,18 @@ Opens at `http://localhost:8501`. Enter a GCP project ID and click **Run Securit
 Score starts at 100 and deducts points per finding:
 
 | Severity | Points deducted |
-|---|---|
-| CRITICAL | -20 |
-| HIGH | -10 |
-| MEDIUM | -5 |
-| LOW | -2 |
+| -------- | --------------- |
+| CRITICAL | -20             |
+| HIGH     | -10             |
+| MEDIUM   | -5              |
+| LOW      | -2              |
 
-| Score | Grade |
-|---|---|
-| 90–100 | Excellent |
-| 70–89 | Good |
-| 50–69 | Needs Improvement |
-| < 50 | Critical Risk |
+| Score  | Grade             |
+| ------ | ----------------- |
+| 90–100 | Excellent         |
+| 70–89  | Good              |
+| 50–69  | Needs Improvement |
+| < 50   | Critical Risk     |
 
 ## Security notes
 
